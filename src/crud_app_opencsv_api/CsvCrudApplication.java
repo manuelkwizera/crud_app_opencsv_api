@@ -1,5 +1,6 @@
 package crud_app_opencsv_api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import com.opencsv.CSVReader;
@@ -71,28 +72,108 @@ public class CsvCrudApplication {
     }
 	
 	private static void viewRecords() {
-		try (CSVReader reader = new CSVReaderBuilder(new FileReader(CSV_FILE_PATH))
-                .withCSVParser(new com.opencsv.CSVParserBuilder().withSeparator(CSV_SEPARATOR).build())
-                .build()) {
+		 try (CSVReader reader = new CSVReaderBuilder(new FileReader(CSV_FILE_PATH))
+	                .withCSVParser(new com.opencsv.CSVParserBuilder().withSeparator(CSV_SEPARATOR).build())
+	                .build()) {
 
-            List<String[]> records = reader.readAll();
-            System.out.println("\nRecords:");
+	            List<String[]> records = reader.readAll();
+	            System.out.println("\nRecords:");
 
-            for (String[] fields : records) {
-                System.out.println("Name: " + fields[0] + ", Age: " + fields[1] + ", Email: " + fields[2]);
-            }
+	            for (String[] fields : records) {
+	                System.out.println("Name: " + fields[0] + ", Age: " + fields[1] + ", Email: " + fields[2]);
+	            }
 
-        } catch (IOException | CsvException e) {
-            System.err.println("Error viewing records: " + e.getMessage());
-        }
+	        } catch (IOException | CsvException e) {
+	            System.err.println("Error viewing records: " + e.getMessage());
+	        }
 	}
 	
 	private static void updateRecord() {
-		 
+	    Scanner scanner = new Scanner(System.in);
+
+	    System.out.print("Enter the name of the record to update: ");
+	    String nameToUpdate = scanner.nextLine();
+
+	    List<String[]> records = new ArrayList<>();
+
+	    try (CSVReader reader = new CSVReaderBuilder(new FileReader(CSV_FILE_PATH))
+	            .withCSVParser(new com.opencsv.CSVParserBuilder().withSeparator(CSV_SEPARATOR).build())
+	            .build()) {
+
+	        records = reader.readAll();
+
+	    } catch (IOException | CsvException e) {
+	        System.err.println("Error updating record: " + e.getMessage());
+	        return;
+	    }
+
+	    try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH), CSV_SEPARATOR,
+	            CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END)) {
+
+	        boolean recordUpdated = false;
+
+	        for (String[] record : records) {
+	            if (record[0].equals(nameToUpdate)) {
+	                System.out.print("Enter updated data (Name, Age, Email): ");
+	                String updatedData = scanner.nextLine();
+	                String[] updatedRecord = updatedData.split(String.valueOf(CSV_SEPARATOR));
+	                writer.writeNext(updatedRecord);
+	                System.out.println("Record updated successfully.");
+	                recordUpdated = true;
+	            } else {
+	                writer.writeNext(record);
+	            }
+	        }
+
+	        if (!recordUpdated) {
+	            System.out.println("Record not found for updating.");
+	        }
+
+	    } catch (IOException e) {
+	        System.err.println("Error updating record: " + e.getMessage());
+	    }
 	}
-	
+
 	private static void deleteRecord() {
-		 
+	    Scanner scanner = new Scanner(System.in);
+
+	    System.out.print("Enter the name of the record to delete: ");
+	    String nameToDelete = scanner.nextLine();
+
+	    List<String[]> records = new ArrayList<>();
+
+	    try (CSVReader reader = new CSVReaderBuilder(new FileReader(CSV_FILE_PATH))
+	            .withCSVParser(new com.opencsv.CSVParserBuilder().withSeparator(CSV_SEPARATOR).build())
+	            .build()) {
+
+	        records = reader.readAll();
+
+	    } catch (IOException | CsvException e) {
+	        System.err.println("Error deleting record: " + e.getMessage());
+	        return;
+	    }
+
+	    try (CSVWriter writer = new CSVWriter(new FileWriter(CSV_FILE_PATH), CSV_SEPARATOR,
+	            CSVWriter.NO_QUOTE_CHARACTER, CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END)) {
+
+	        boolean recordDeleted = false;
+
+	        for (String[] record : records) {
+	            if (!record[0].equals(nameToDelete)) {
+	                writer.writeNext(record);
+	            } else {
+	                System.out.println("Record deleted successfully.");
+	                recordDeleted = true;
+	            }
+	        }
+
+	        if (!recordDeleted) {
+	            System.out.println("Record not found for deletion.");
+	        }
+
+	    } catch (IOException e) {
+	        System.err.println("Error deleting record: " + e.getMessage());
+	    }
 	}
-	 
+
 }
